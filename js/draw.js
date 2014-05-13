@@ -95,21 +95,28 @@ function init() {
 		  console.log("ERROR:"+xhr.responseText+" "+status+" "+error);
 		}
     });
+
+	$('#bigimage').attr("src", "getdraw.php?op=sendpng&DrawingID=1&RealWidth="+RealWidth+"&RealHeight="+RealHeight);
+
+	//reposition the png behind the drawing viewport
+	$("#copyimage").attr("src", $('#bigimage').attr('src'));
+	$("#copyimage").css({"left": (0 - RealLeftPos )+"px",  "top": (0 - RealTopPos )+"px" });
 	
 	setInterval(function() { 
 		LoadAndUpdateDrawing();
+
 		if (!StopUpdating) { 
 			RedrawBigPNGCounter++;
-			
 			if (RedrawBigPNGCounter>1000)
 			{
+				DrawingCache = []; //clear local drawing cache
+				
 				RedrawBigPNGCounter=0;
 				$('#bigimage').attr("src", "getdraw.php?op=sendpng&DrawingID=1&RealWidth="+RealWidth+"&RealHeight="+RealHeight);
 				
 				//reposition the png behind the drawing viewport
 				$("#copyimage").attr("src", $('#bigimage').attr('src'));
 				$("#copyimage").css({"left": (0 - RealLeftPos )+"px",  "top": (0 - RealTopPos )+"px" });
-				
 			}
 		}
 	}, 500);
@@ -168,6 +175,22 @@ function draw(x1,y1,x2,y2) {
     ctx.closePath();
 }
 
+function RedrawCanvas()
+{
+	console.log("redraw");
+    ctx.beginPath();
+    ctx.strokeStyle = "black";
+    ctx.lineWidth = 2;
+
+	for (i=0; i<DrawingCache.length; i++)
+	{
+		ctx.moveTo(DrawingCache[i].X1 - RealLeftPos ,DrawingCache[i].Y1 - RealTopPos);
+		ctx.lineTo(DrawingCache[i].X2 - RealLeftPos ,DrawingCache[i].Y2 - RealTopPos);
+	}
+	
+    ctx.stroke();
+    ctx.closePath();
+}
 
 //---------------------------------------------------------------------------------------------------------------------------------------------------
 function LoadAndUpdateDrawing()
@@ -187,18 +210,17 @@ function LoadAndUpdateDrawing()
 		success: function(resultData) {
 			if (resultData.length>0)
 			{
+				console.log(resultData.length);
+
 				for (i=0; i<resultData.length; i++)
 				{
 					DrawingCache.push( { "ID":resultData[i].ID , "X1":resultData[i].X1 , "Y1":resultData[i].Y1,"X2":resultData[i].X2,"Y2":resultData[i].Y2 } );
 				}
-			
+				
 				//if any new data has arrived then draw
 				if (LastID !== DrawingCache[DrawingCache.length-1].ID )
 				{
-					for (i=0; i<DrawingCache.length; i++)
-					{
-						draw(DrawingCache[i].X1 - RealLeftPos ,DrawingCache[i].Y1 - RealTopPos ,DrawingCache[i].X2 - RealLeftPos ,DrawingCache[i].Y2 - RealTopPos);
-					}
+					RedrawCanvas();
 					LastID = DrawingCache[DrawingCache.length-1].ID;
 					//console.log(DrawingCache);
 				}
@@ -220,7 +242,6 @@ function LoadAndUpdateDrawing()
 $(document).ready(function() {
 	DrawCanvas = $("#can").get(0);
 	ctx = DrawCanvas.getContext("2d");
-	
 
 	ctx.canvas.width = DrawWidth;
 	ctx.canvas.height = DrawHeight;
@@ -236,28 +257,28 @@ $(document).ready(function() {
 //	$("#savebtn").click(function() { save(); });
 
 	$( "#smallscreen" ).
-			draggable({ 
-				containment: "#bigscreen",
-				start: function() {
-					StopUpdating = true;
-				},
-				stop: function() {
-					StopUpdating = false;
-					LeftPos = $(this).position().left;
-					TopPos = $(this).position().top;
-					RealLeftPos = Math.round(LeftPos * RealWidth / PreviewWidth );
-					RealTopPos = Math.round(TopPos * RealHeight / PreviewHeight );
+		draggable({ 
+			containment: "#bigscreen",
+			start: function() {
+				StopUpdating = true;
+			},
+			stop: function() {
+				StopUpdating = false;
+				LeftPos = $(this).position().left;
+				TopPos = $(this).position().top;
+				RealLeftPos = Math.round(LeftPos * RealWidth / PreviewWidth );
+				RealTopPos = Math.round(TopPos * RealHeight / PreviewHeight );
 
-					//reposition the png behind the drawing viewport
-					$("#copyimage").attr("src", $('#bigimage').attr('src'));
-					$("#copyimage").css({"left": (0 - RealLeftPos )+"px",  "top": (0 - RealTopPos )+"px" });
+				console.log(RealLeftPos+" "+RealTopPos);
 
-					//RedrawBigPNGCounter=1000;
+				//reposition the png behind the drawing viewport
+				$("#copyimage").css({"left": (0 - RealLeftPos )+"px",  "top": (0 - RealTopPos )+"px" });
 
-					ctx.clearRect(0, 0, w, h);
-					LoadAndUpdateDrawing();
-				}
-			});
+				//RedrawBigPNGCounter=1000;
+				ctx.clearRect(0, 0, w, h);
+				RedrawCanvas();
+			}
+		});
 			
 			
 	RedrawBigPNGCounter = 1000; //force refresh image in the beginning
