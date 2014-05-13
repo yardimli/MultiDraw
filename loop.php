@@ -1,4 +1,5 @@
 <?php
+
 set_time_limit(9600);
 
 $link = mysql_pconnect("localhost","DrawUser","DrawPassword"); //B123456a

@@ -1,5 +1,6 @@
 <?php
-set_time_limit(9600);
+
+set_time_limit(120);
 
 $form_data = array(); //test commit from desktop
 $form_data['success'] = true;
