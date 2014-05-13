@@ -4,7 +4,7 @@ set_time_limit(9600);
 $form_data = array(); //Pass back the data to `form.php`
 $form_data['success'] = true;
 
-$link = mysql_pconnect($MysqlIP,"root","Mantik77"); //B123456a
+$link = mysql_pconnect($MysqlIP,"DrawUser","DrawPassword"); //B123456a
 mysql_select_db("cloudofvoice");
 $mysqlresult = mysql_query("SET NAMES utf8");
 $mysqlresult = mysql_query("SET CHARACTER_SET utf8");
