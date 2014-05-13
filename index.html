@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=0">
+<meta http-equiv="Content-Type" content="text/html, charset=UTF-8">
+<meta http-equiv="Content-Language" content="en-us">
+<meta name="title" content="Elooi - Cloud of Voice">
+<title>Draw Something</title>
+<link href="css/ui-lightness/jquery-ui-1.10.4.custom.css" rel="stylesheet">
+<link href="css/draw.css" rel="stylesheet">
+<script src="js/jquery-1.10.2.js"></script>
+<script src="js/jquery-ui-1.10.4.js"></script> 
+<script src="js/jquery.ui.touch-punch.min.js" type="text/javascript" charset="utf-8"></script>
+
+<script src="js/jquery.animatedborder.js" type="text/javascript"></script>
+<link rel="stylesheet" media="screen" href="css/animatedborder.css">  
+
+<script src="js/draw.js" type="text/javascript" charset="utf-8"></script>
+
+</head>
+
+<html>
+
+<body>
+    <div id="canvascontainer" style="position:absolute; left:10px; top:10px; cursor:pointer;  -webkit-tap-highlight-color:rgba(0,0,0,0); overflow:hidden; border:2px solid #ababab;">
+		<img id="copyimage" style="position:absolute; top:0px; left:0px;">
+		<canvas id="can" width="500" height="550" style="position:absolute; top:0px; left:0px;"></canvas>
+    </div>
+    
+    <div style="position:absolute; left:510px; top:10px;">
+        <img id="canvasimg" style="position:absolute;top:10%;left:52%;" style="display:none;">
+    </div>
+
+	
+	
+    <div style="position:absolute; left:550px; top:10px; width:400px; height:550px; border:2px solid #ccc; overflow:hidden" id="bigscreen">
+		<img src="" id="bigimage">
+		<div style="position:absolute; left:0px; top:0px; width:8px; height:12px;" id="smallscreen"></div>
+
+		<!-- div class="outer selected" style="position:absolute; left:0px; top:0px; width:8px; height:12px;" id="smallscreen">
+			<div class="inner" />
+		  </div -->
+    </div>
+</body>
+</html>
