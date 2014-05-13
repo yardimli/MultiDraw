@@ -36,6 +36,8 @@ var DragBoxHeight = Math.round( PreviewHeight * (DrawHeight / RealHeight) );
 var dataToSend = [];
 var dataToSendTemp = [];
 
+var DrawingCache = [];
+
 var isiPad = false;
 var isiPadFirstTimeLoad = false;
 
@@ -57,7 +59,8 @@ var LastID = 0;
 
 var TopPos = 0;
 var LeftPos = 0;
-
+var RealTopPos = 0;
+var RealLeftPos = 0;
 var RedrawBigPNGCounter = 0;
 
 //---------------------------------------------------------------------------------------------------------------------------------------------------
@@ -98,13 +101,15 @@ function init() {
 		if (!StopUpdating) { 
 			RedrawBigPNGCounter++;
 			
-			if (RedrawBigPNGCounter>10)
+			if (RedrawBigPNGCounter>1000)
 			{
 				RedrawBigPNGCounter=0;
 				$('#bigimage').attr("src", "getdraw.php?op=sendpng&DrawingID=1&RealWidth="+RealWidth+"&RealHeight="+RealHeight);
+				
+				//reposition the png behind the drawing viewport
 				$("#copyimage").attr("src", $('#bigimage').attr('src'));
-				$("#copyimage").css({"left": (0 - Math.round(LeftPos * RealWidth / PreviewWidth ) )+"px",  
-									 "top": (0 - Math.round(TopPos * RealHeight / PreviewHeight ))+"px" });
+				$("#copyimage").css({"left": (0 - RealLeftPos )+"px",  "top": (0 - RealTopPos )+"px" });
+				
 			}
 		}
 	}, 500);
@@ -126,7 +131,9 @@ function findxy(res, e) {
         flag = true;
         dot_flag = true;
         if (dot_flag) {
-            draw(currX, currY,currX+1,currY,false);
+            draw(currX, currY,currX+1,currY);
+			PostValues = { "X1" : currX, "Y1" : currY, "X2" : currX+1, "Y2" : currY};
+			dataToSend.push(PostValues);
             dot_flag = false;
         }
     }
@@ -134,23 +141,24 @@ function findxy(res, e) {
     if (res == 'up' || res == "out") {
         flag = false;
 		StopUpdating = false;
-		RedrawBigPNGCounter = 20; //make next update refresh preview big image too
+//		RedrawBigPNGCounter = 1000; //make next update refresh preview big image too
     }
 	
     if (res == 'move') {
         if (flag) {
-			
             prevX = currX;
             prevY = currY;
             currX = (e.pageX) - $("#can").offset().left;
             currY = (e.pageY) - $("#can").offset().top;
-            draw(prevX, prevY,currX, currY, false);
+            draw(prevX, prevY,currX, currY);
+			PostValues = { "X1" : prevX, "Y1" : prevY, "X2" : currX, "Y2" : currY};
+			dataToSend.push(PostValues);
         }
     }
 }
 
 //---------------------------------------------------------------------------------------------------------------------------------------------------
-function draw(x1,y1,x2,y2,redraw) {
+function draw(x1,y1,x2,y2) {
     ctx.beginPath();
     ctx.moveTo(x1,y1);
     ctx.lineTo(x2,y2);
@@ -158,13 +166,6 @@ function draw(x1,y1,x2,y2,redraw) {
     ctx.lineWidth = 2;
     ctx.stroke();
     ctx.closePath();
-	
-//	console.log(prevX+" "+prevY+" "+currX+" "+currY+" ");
-    if (!redraw)
-    {
-		var PostValues = { "X1" : x1, "Y1" : y1, "X2" : x2, "Y2" : y2};
-		dataToSend.push(PostValues);
-    }
 }
 
 
@@ -176,30 +177,41 @@ function LoadAndUpdateDrawing()
                                             "RealWidth" : RealWidth , "RealHeight" : RealHeight ,
                                             "PreviewWidth" : PreviewWidth , "PreviewHeight" : PreviewHeight ,
                                             "PostData":  JSON.stringify(dataToSend)};
-//	console.log(PostValues);
-	
     dataToSendTemp = dataToSend;
     dataToSend = [];
-    var loadData = $.ajax({
-            type: 'POST',
-            url: "getdraw.php",
-            data: PostValues,
-            dataType: "json",
-            success: function(resultData) {
-                  for (i=0; i<resultData.length; i++)
-                  {
-					draw(resultData[i].X1,resultData[i].Y1,resultData[i].X2,resultData[i].Y2,true);
-					LastID = resultData[i].ID;
-                  }
-            },
-            error: function(xhr, status, error) {
-              console.log("ERROR:"+xhr.responseText+" "+status+" "+error);
+    $.ajax({
+		type: 'POST',
+		url: "getdraw.php",
+		data: PostValues,
+		dataType: "json",
+		success: function(resultData) {
+			if (resultData.length>0)
+			{
+				for (i=0; i<resultData.length; i++)
+				{
+					DrawingCache.push( { "ID":resultData[i].ID , "X1":resultData[i].X1 , "Y1":resultData[i].Y1,"X2":resultData[i].X2,"Y2":resultData[i].Y2 } );
+				}
+			
+				//if any new data has arrived then draw
+				if (LastID !== DrawingCache[DrawingCache.length-1].ID )
+				{
+					for (i=0; i<DrawingCache.length; i++)
+					{
+						draw(DrawingCache[i].X1 - RealLeftPos ,DrawingCache[i].Y1 - RealTopPos ,DrawingCache[i].X2 - RealLeftPos ,DrawingCache[i].Y2 - RealTopPos);
+					}
+					LastID = DrawingCache[DrawingCache.length-1].ID;
+					//console.log(DrawingCache);
+				}
+			}
+		},
+		error: function(xhr, status, error) {
+		  console.log("ERROR:"+xhr.responseText+" "+status+" "+error);
 
-              //in case of error copy the temp stored data back into dataToSend
-              dataToSendTemp.push.apply(dataToSendTemp,dataToSend);
-              dataToSend = dataToSendTemp;
+		  //in case of error copy the temp stored data back into dataToSend
+		  dataToSendTemp.push.apply(dataToSendTemp,dataToSend);
+		  dataToSend = dataToSendTemp;
 
-            }
+		}
     });
 }
 
@@ -223,22 +235,30 @@ $(document).ready(function() {
 
 //	$("#savebtn").click(function() { save(); });
 
-	$( "#smallscreen" ).draggable({ 
-							containment: "#bigscreen",
-							start: function() {
-									StopUpdating = true;
-							},
-							stop: function() {
-									StopUpdating = false;
-									LeftPos = $(this).position().left;
-									TopPos = $(this).position().top;
-									
-									RedrawBigPNGCounter=10;
+	$( "#smallscreen" ).
+			draggable({ 
+				containment: "#bigscreen",
+				start: function() {
+					StopUpdating = true;
+				},
+				stop: function() {
+					StopUpdating = false;
+					LeftPos = $(this).position().left;
+					TopPos = $(this).position().top;
+					RealLeftPos = Math.round(LeftPos * RealWidth / PreviewWidth );
+					RealTopPos = Math.round(TopPos * RealHeight / PreviewHeight );
 
-									ctx.clearRect(0, 0, w, h);
-									LoadAndUpdateDrawing();
-							}
-						});
-	RedrawBigPNGCounter = 10; //force refresh image in the beginning
+					//reposition the png behind the drawing viewport
+					$("#copyimage").attr("src", $('#bigimage').attr('src'));
+					$("#copyimage").css({"left": (0 - RealLeftPos )+"px",  "top": (0 - RealTopPos )+"px" });
+
+					//RedrawBigPNGCounter=1000;
+
+					ctx.clearRect(0, 0, w, h);
+					LoadAndUpdateDrawing();
+				}
+			});
+			
+			
+	RedrawBigPNGCounter = 1000; //force refresh image in the beginning
 });
-//uiL=JSbN.o
