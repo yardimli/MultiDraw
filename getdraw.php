@@ -10,7 +10,33 @@ mysql_select_db("cloudofvoice");
 $mysqlresult = mysql_query("SET NAMES utf8");
 $mysqlresult = mysql_query("SET CHARACTER_SET utf8");
 
-$SizeMultipler = 2;
+if (($_POST["op"]=="sendpngfile") || ($_GET["op"]=="sendpngfile"))
+{
+	$DrawingID = $_POST["DrawingID"];
+	if ($DrawingID=="") { $DrawingID = $_GET["DrawingID"]; }
+	if (!is_numeric($DrawingID)) { $DrawingID ="1"; }
+
+	$xsqlCommand = "SELECT * FROM snapshots WHERE DrawingID=".$DrawingID." ORDER BY ID DESC LIMIT 1";
+	$mysqlresult = mysql_query($xsqlCommand);
+	$mysql_rows = mysql_num_rows($mysqlresult);
+	
+	header('location: '.mysql_result($mysqlresult, 0, "SnapFile"));
+	exit();
+}
+
+if ($_POST["op"]=="getlastsnapid")
+{
+	$DrawingID = $_POST["DrawingID"];
+	if ($DrawingID=="") { $DrawingID = $_GET["DrawingID"]; }
+	if (!is_numeric($DrawingID)) { $DrawingID ="1"; }
+
+	$xsqlCommand = "SELECT * FROM snapshots WHERE DrawingID=".$DrawingID." ORDER BY ID DESC LIMIT 1";
+	$mysqlresult = mysql_query($xsqlCommand);
+	$mysql_rows = mysql_num_rows($mysqlresult);
+	
+	echo mysql_result($mysqlresult, 0, "LastID");
+}
+
 
 if (($_POST["op"]=="sendpng") || ($_GET["op"]=="sendpng"))
 {
@@ -71,7 +97,6 @@ if ($_POST["op"]=="getlastid")
 	$mysql_rows = mysql_num_rows($mysqlresult);
 	
 	echo mysql_result($mysqlresult, 0, "ID");
-	
 }
 
 if ($_POST["op"]=="load")

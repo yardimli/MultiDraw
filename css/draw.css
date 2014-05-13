@@ -1,3 +1,31 @@
+body {
+	margin: 0;
+	padding: 0;	
+}
+
+
+.wpframe {
+	border-radius: 3px;
+	-webkit-border-radius: 3px;
+	-moz-border-radius: 3px;
+	-webkit-box-shadow: 3px 2px 1px #d1d1d1;
+	-moz-box-shadow: 3px 2px 1px #d1d1d1;
+	box-shadow: 3px 2px 1px #d1d1d1;
+	border:1px solid #aaa;
+}
+
+
+.footer {
+	background: #f0f1f4; height:22px; display:block; border-top: 1px solid #d8dde1; padding-left:15px;
+    position: fixed;
+    left: 0;
+    right: 0;
+    bottom: 0;
+	font-family: 'Indie Flower', cursive; font-size:14px;
+}    
+
+
+
 .outer {
   position: absolute;
   

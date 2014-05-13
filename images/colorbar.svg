@@ -1,0 +1,21 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="500">
+            <rect x="0" width="4" height="100%" style="fill:#172327"/>
+            <rect x="4" width="73" height="100%" style="fill:#19372c"/>
+            <rect x="77" width="30" height="100%" style="fill:#327344"/>
+            <rect x="107" width="6" height="100%" style="fill:#437e4c"/>
+            <rect x="113" width="11" height="100%" style="fill:#869956"/>
+            <rect x="124" width="36" height="100%" style="fill:#b08f42"/>
+            <rect x="160" width="57" height="100%" style="fill:#b46839"/>
+            <rect x="217" width="18" height="100%" style="fill:#a43941"/>
+            <rect x="235" width="3" height="100%" style="fill:#9c2c52"/>
+            <rect x="238" width="3" height="100%" style="fill:#bb426b"/>
+            <rect x="241" width="75" height="100%" style="fill:#8a2f5c"/>
+            <rect x="316" width="24" height="100%" style="fill:#6d416d"/>
+            <rect x="340" width="42" height="100%" style="fill:#413264"/>
+            <rect x="382" width="2" height="100%" style="fill:#29416e"/>
+            <rect x="384" width="26" height="100%" style="fill:#5690a5"/>
+            <rect x="410" width="10" height="100%" style="fill:#2e849d"/>
+            <rect x="420" width="48" height="100%" style="fill:#276686"/>
+            <rect x="468" width="26" height="100%" style="fill:#23436e"/>
+            <rect x="494" width="6" height="100%" style="fill:#142a06"/>
+    </svg>

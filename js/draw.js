@@ -23,7 +23,7 @@ var RealWidth = 2000;
 var RealHeight = 2500;
 
 var DrawWidth = 500;
-var DrawHeight = 300;
+var DrawHeight = 375;
 
 var PreviewWidth = 300;
 var PreviewXRatio = (RealWidth / PreviewWidth);
@@ -81,7 +81,7 @@ function init() {
         DrawCanvas.addEventListener("mouseout", function (e) { e.preventDefault(); findxy('out', e) }, false);
     }
 
-    var PostValues = { "op":"getlastid", "SenderID" : "1", "DrawingID" : "1" };
+    var PostValues = { "op":"getlastsnapid", "DrawingID" : "1" };
     $.ajax({
 		type: 'POST',
 		url: "getdraw.php",
@@ -96,23 +96,17 @@ function init() {
 		}
     });
 
-	$('#bigimage').attr("src", "getdraw.php?op=sendpng&DrawingID=1&RealWidth="+RealWidth+"&RealHeight="+RealHeight);
-
-	//reposition the png behind the drawing viewport
-	$("#copyimage").attr("src", $('#bigimage').attr('src'));
-	$("#copyimage").css({"left": (0 - RealLeftPos )+"px",  "top": (0 - RealTopPos )+"px" });
-	
 	setInterval(function() { 
 		LoadAndUpdateDrawing();
 
 		if (!StopUpdating) { 
 			RedrawBigPNGCounter++;
-			if (RedrawBigPNGCounter>1000)
+			if (RedrawBigPNGCounter>30)//15sec
 			{
-				DrawingCache = []; //clear local drawing cache
+				//DrawingCache = []; //clear local drawing cache
 				
 				RedrawBigPNGCounter=0;
-				$('#bigimage').attr("src", "getdraw.php?op=sendpng&DrawingID=1&RealWidth="+RealWidth+"&RealHeight="+RealHeight);
+				$('#bigimage').attr("src", "getdraw.php?op=sendpngfile&DrawingID=1&rnd="+Math.floor((Math.random() * 100000) + 1));
 				
 				//reposition the png behind the drawing viewport
 				$("#copyimage").attr("src", $('#bigimage').attr('src'));
@@ -148,7 +142,7 @@ function findxy(res, e) {
     if (res == 'up' || res == "out") {
         flag = false;
 		StopUpdating = false;
-//		RedrawBigPNGCounter = 1000; //make next update refresh preview big image too
+		RedrawBigPNGCounter = 1000; //make next update refresh preview big image too
     }
 	
     if (res == 'move') {
@@ -247,11 +241,16 @@ $(document).ready(function() {
 	ctx.canvas.height = DrawHeight;
 
 	$("#canvascontainer").css({"width":DrawWidth+"px","height":DrawHeight+"px"});
-	$("#bigscreen").css({"width":PreviewWidth+"px","height":PreviewHeight+"px"});
+
+	$("#bigscreen").css({"left": ($("#canvascontainer").position().left+$("#canvascontainer").width()+20 )+"px" , "width":PreviewWidth+"px","height":PreviewHeight+"px"});
 	$("#bigimage").css({"width":PreviewWidth+"px","height":PreviewHeight+"px"});
 	$("#smallscreen").css({"width":DragBoxWidth+"px","height":DragBoxHeight+"px"});
 	$('#smallscreen').animatedBorder({size: 1, color: '#A92546'}); 	
 
+	$("#searchicon").css({"left":($("#bigscreen").position().left+$("#bigscreen").width()-20 )+"px" });
+	
+	$("#thumbs").css({"top":($("#canvascontainer").position().top + $("#canvascontainer").height()+20)+"px", "width":($("#canvascontainer").width()+$("#bigscreen").width()+20-10 )+"px" });
+	
 	init();
 
 //	$("#savebtn").click(function() { save(); });
@@ -274,7 +273,7 @@ $(document).ready(function() {
 				//reposition the png behind the drawing viewport
 				$("#copyimage").css({"left": (0 - RealLeftPos )+"px",  "top": (0 - RealTopPos )+"px" });
 
-				//RedrawBigPNGCounter=1000;
+				RedrawBigPNGCounter=1000;
 				ctx.clearRect(0, 0, w, h);
 				RedrawCanvas();
 			}
