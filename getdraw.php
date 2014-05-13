@@ -4,7 +4,7 @@ set_time_limit(9600);
 $form_data = array(); //test commit from desktop
 $form_data['success'] = true;
 
-$link = mysql_pconnect($MysqlIP,"DrawUser","DrawPassword"); //B123456a
+$link = mysql_pconnect("localhost","DrawUser","DrawPassword"); //B123456a
 mysql_select_db("cloudofvoice");
 $mysqlresult = mysql_query("SET NAMES utf8");
 $mysqlresult = mysql_query("SET CHARACTER_SET utf8");
@@ -155,9 +155,10 @@ if ($_POST["op"]=="load")
 		$X2=mysql_result($mysqlresult, $i, "X2");
 		$Y2=mysql_result($mysqlresult, $i, "Y2");
 		
-		if (($X1>=($LeftPos-50)) && ($Y1>=($TopPos-50)) && ($X2<=($LeftPos+$DrawWidth+50)) && ($Y2<=($TopPos+$DrawHeight+50))) {
-			$coordinates[] = array("ID"=>$ID,"X1"=>($X1-$LeftPos),"Y1"=>($Y1-$TopPos),"X2"=>($X2-$LeftPos),"Y2"=>($Y2-$TopPos));
-		}
+//		Send everything new not just the viewport as now the client will cache this data instead
+//		if (($X1>=($LeftPos-50)) && ($Y1>=($TopPos-50)) && ($X2<=($LeftPos+$DrawWidth+50)) && ($Y2<=($TopPos+$DrawHeight+50))) {
+		$coordinates[] = array("ID"=>$ID,"X1"=>($X1),"Y1"=>($Y1),"X2"=>($X2),"Y2"=>($Y2));
+//		}
 	}
 	
 	
