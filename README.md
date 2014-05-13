@@ -11,5 +11,5 @@ it uses ajax to update and keep everyones drawing in sync.
 
 Data is stored in a mysql table.
 
-<IMG SRC="https://raw.github.com/yardimli/MultiDraw/master/screenshot.png">
+<IMG SRC="https://raw.github.com/yardimli/MultiDraw/master/multidraw.png">
 
