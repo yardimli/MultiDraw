@@ -1,7 +1,7 @@
 <?php
 set_time_limit(9600);
 
-$form_data = array(); //Pass back the data to `form.php`
+$form_data = array(); //test commit from desktop
 $form_data['success'] = true;
 
 $link = mysql_pconnect($MysqlIP,"DrawUser","DrawPassword"); //B123456a
