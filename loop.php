@@ -1,6 +1,6 @@
 <?php
 
-set_time_limit(9600);
+set_time_limit(96000);
 
 $link = mysql_pconnect("localhost","DrawUser","DrawPassword"); //B123456a
 mysql_select_db("cloudofvoice");
