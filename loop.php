@@ -7,7 +7,25 @@ mysql_select_db("cloudofvoice");
 $mysqlresult = mysql_query("SET NAMES utf8");
 $mysqlresult = mysql_query("SET CHARACTER_SET utf8");
 
+
+function convertPNGto8bitPNG($sourcePath, $destPath) {
+	$srcimage = imagecreatefrompng($sourcePath);
+	list($width, $height) = getimagesize($sourcePath);
+	$img = imagecreatetruecolor($width, $height);
+	$bga = imagecolorallocatealpha($img, 0, 0, 0, 127);
+	imagecolortransparent($img, $bga);
+	imagefill($img, 0, 0, $bga);
+	imagecopy($img, $srcimage, 0, 0, 0, 0, $width, $height);
+	imagetruecolortopalette($img, false, 255);
+	imagesavealpha($img, true);
+	imagepng($img, $destPath);
+	imagedestroy($img);
+}
+			
+
 $start = microtime(true);
+
+echo "StartTime: ".$start;
 
 for ($loopi = 0; $loopi < (60*6*48); $loopi++) 
 {
@@ -51,7 +69,9 @@ for ($loopi = 0; $loopi < (60*6*48); $loopi++)
 		}
 		
 		$SnapFileName = "preview/".$DrawingID."-".$TimeStamp."-preview.png";
-		imagepng($image,$SnapFileName);
+		imagepng($image,"temp.png");
+		convertPNGto8bitPNG("temp.png",$SnapFileName);
+//		imagepng($image,$SnapFileName);
 		
 		$xsqlCommand3 = "INSERT INTO snapshots (LastID,Width,Height,DrawingID,SnapFile,xDate) VALUES (". mysql_result($mysqlresult, $i-1, "ID") . "," . $RealWidth .",". $RealHeight .",". $DrawingID .",'". $SnapFileName ."',now())";
 //		echo $xsqlCommand3;
@@ -60,7 +80,8 @@ for ($loopi = 0; $loopi < (60*6*48); $loopi++)
 	}
 	
 	
-	
+
+	echo "waiting from ".$start." till ".($start + ($loopi*15) + 15);
 	time_sleep_until($start + ($loopi*15) + 15);
 }
 	exit;
