@@ -75,7 +75,11 @@ for ($loopi = 0; $loopi < (60*6*48); $loopi++)
 		convertPNGto8bitPNG("temp.png",$SnapFileName);
 //		imagepng($image,$SnapFileName);
 		
-		$xsqlCommand3 = "INSERT INTO snapshots (LastID,Width,Height,DrawingID,SnapFile,xDate) VALUES (". mysql_result($mysqlresult, $i-1, "ID") . "," . $RealWidth .",". $RealHeight .",". $DrawingID .",'". $SnapFileName ."',now())";
+		$LastID = 0;
+		if ($mysql_rows>0) {
+			$LastID = mysql_result($mysqlresult, $i-1, "ID");
+		}
+		$xsqlCommand3 = "INSERT INTO snapshots (LastID,Width,Height,DrawingID,SnapFile,xDate) VALUES (". $LastID . "," . $RealWidth .",". $RealHeight .",". $DrawingID .",'". $SnapFileName ."',now())";
 //		echo $xsqlCommand3;
 		$mysqlresult3 = mysql_query($xsqlCommand3);
 		

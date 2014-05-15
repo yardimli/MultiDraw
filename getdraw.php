@@ -10,6 +10,36 @@ mysql_select_db("cloudofvoice");
 $mysqlresult = mysql_query("SET NAMES utf8");
 $mysqlresult = mysql_query("SET CHARACTER_SET utf8");
 
+if (($_POST["op"]=="getallcanvas") || ($_GET["op"]=="getallcanvas"))
+{
+	$xsqlCommand = "SELECT * FROM canvas WHERE active=1 ORDER BY ID DESC";
+	$mysqlresult = mysql_query($xsqlCommand);
+	$mysql_rows = mysql_num_rows($mysqlresult);
+
+	$canvases = array();
+
+	for ($i=0; $i<$mysql_rows; $i++)
+	{
+		$DrawingID=mysql_result($mysqlresult, $i, "ID");
+		$Width=mysql_result($mysqlresult, $i, "CanvasWidth");
+		$Height=mysql_result($mysqlresult, $i, "CanvasHeight");
+		$LastID=mysql_result($mysqlresult, $i, "LastID");
+
+		$xsqlCommand2 = "SELECT * FROM snapshots WHERE DrawingID=". $DrawingID ." ORDER BY ID DESC LIMIT 1";
+		$mysqlresult2 = mysql_query($xsqlCommand2);
+		$mysql_rows2 = mysql_num_rows($mysqlresult2);
+		
+		if ($mysql_rows2>0) {
+			$FilePath = mysql_result($mysqlresult2,0,"snapfile");
+			$canvases[] = array("DrawingID"=>$DrawingID,"Widht"=>($Width),"Height"=>($Height),"LastID"=>($LastID),"FilePath"=>($FilePath));			
+		}		
+	}
+
+	echo json_encode($canvases); //output JSON data
+	
+	exit();
+}
+
 if (($_POST["op"]=="sendpngfile") || ($_GET["op"]=="sendpngfile"))
 {
 	$DrawingID = $_POST["DrawingID"];

@@ -46,6 +46,8 @@ var isiPad_ = navigator.userAgent.match(/iPad/i) != null;
 var isAndroid = ua.indexOf("android") > -1; //&& ua.indexOf("mobile");
 var ArticlePanel = $("#ArticlePanel");
 
+var consoldebug = false;
+
 if ((isiPad_) || (isAndroid)) { isiPad = true; }
 
 var DrawCanvas, ctx, flag = false,
@@ -80,6 +82,28 @@ function init() {
         DrawCanvas.addEventListener("mouseup", function (e) { e.preventDefault(); findxy('up', e) }, false);
         DrawCanvas.addEventListener("mouseout", function (e) { e.preventDefault(); findxy('out', e) }, false);
     }
+	
+    $.ajax({
+		type: 'POST',
+		url: "getdraw.php",
+		data: { "op":"getallcanvas"},
+		dataType: "json",
+		success: function(resultData) {
+			if (resultData.length>0)
+			{
+				if (consoldebug) { console.log(resultData.length); }
+
+				for (i=0; i<resultData.length; i++)
+				{
+					$("#drawingsdiv").append('<div id="Drawing_'+ resultData[i].DrawingID +'" class="wpframe" style="width:40px; height:60px; display:inline-block; margin-right:10px;"><img src="'+ resultData[i].FilePath +'" style="width:100%; height:100;"></div>');
+				}
+			}
+		},
+		error: function(xhr, status, error) {
+		  if (consoldebug) { console.log("ERROR:"+xhr.responseText+" "+status+" "+error); }
+		}
+    });
+	
 
     var PostValues = { "op":"getlastsnapid", "DrawingID" : "1" };
     $.ajax({
@@ -89,10 +113,10 @@ function init() {
 		dataType: "html",
 		success: function(resultData) { 
 			LastID = resultData;
-			console.log(resultData);
+			if (consoldebug) { console.log(resultData); }
 		},
 		error: function(xhr, status, error) {
-		  console.log("ERROR:"+xhr.responseText+" "+status+" "+error);
+		  if (consoldebug) { console.log("ERROR:"+xhr.responseText+" "+status+" "+error); }
 		}
     });
 
@@ -171,7 +195,7 @@ function draw(x1,y1,x2,y2) {
 
 function RedrawCanvas()
 {
-	console.log("redraw");
+	if (consoldebug) { console.log("redraw"); }
     ctx.beginPath();
     ctx.strokeStyle = "black";
     ctx.lineWidth = 2;
@@ -204,7 +228,7 @@ function LoadAndUpdateDrawing()
 		success: function(resultData) {
 			if (resultData.length>0)
 			{
-				console.log(resultData.length);
+				if (consoldebug) { console.log(resultData.length); }
 
 				for (i=0; i<resultData.length; i++)
 				{
@@ -216,12 +240,11 @@ function LoadAndUpdateDrawing()
 				{
 					RedrawCanvas();
 					LastID = DrawingCache[DrawingCache.length-1].ID;
-					//console.log(DrawingCache);
 				}
 			}
 		},
 		error: function(xhr, status, error) {
-		  console.log("ERROR:"+xhr.responseText+" "+status+" "+error);
+		  if (consoldebug) { console.log("ERROR:"+xhr.responseText+" "+status+" "+error); }
 
 		  //in case of error copy the temp stored data back into dataToSend
 		  dataToSendTemp.push.apply(dataToSendTemp,dataToSend);
@@ -248,6 +271,8 @@ $(document).ready(function() {
 	$('#smallscreen').animatedBorder({size: 1, color: '#A92546'}); 	
 
 	$("#searchicon").css({"left":($("#bigscreen").position().left+$("#bigscreen").width()-20 )+"px" });
+
+	$("#historyicon").css({"left":($("#canvascontainer").position().left+$("#canvascontainer").width()-20 )+"px" });
 	
 	$("#thumbs").css({"top":($("#canvascontainer").position().top + $("#canvascontainer").height()+20)+"px", "width":($("#canvascontainer").width()+$("#bigscreen").width()+20-10 )+"px" });
 	
@@ -268,7 +293,7 @@ $(document).ready(function() {
 				RealLeftPos = Math.round(LeftPos * RealWidth / PreviewWidth );
 				RealTopPos = Math.round(TopPos * RealHeight / PreviewHeight );
 
-				console.log(RealLeftPos+" "+RealTopPos);
+				if (consoldebug) { console.log(RealLeftPos+" "+RealTopPos); }
 
 				//reposition the png behind the drawing viewport
 				$("#copyimage").css({"left": (0 - RealLeftPos )+"px",  "top": (0 - RealTopPos )+"px" });
