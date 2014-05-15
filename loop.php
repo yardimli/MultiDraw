@@ -27,6 +27,8 @@ $start = microtime(true);
 
 echo "StartTime: ".$start;
 
+$intervaltime = 60;
+
 for ($loopi = 0; $loopi < (60*6*48); $loopi++) 
 {
 	$TimeStamp = date("YmdHis",time());
@@ -78,10 +80,8 @@ for ($loopi = 0; $loopi < (60*6*48); $loopi++)
 		$mysqlresult3 = mysql_query($xsqlCommand3);
 		
 	}
-	
-	
 
-	echo "waiting from ".$start." till ".($start + ($loopi*15) + 15);
-	time_sleep_until($start + ($loopi*15) + 15);
+	echo "waiting from ".$start." till ".($start + ($loopi*$intervaltime) + $intervaltime);
+	time_sleep_until($start + ($loopi*$intervaltime) + $intervaltime);
 }
 	exit;
