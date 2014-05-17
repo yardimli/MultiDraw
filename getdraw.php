@@ -12,7 +12,7 @@ $mysqlresult = mysql_query("SET CHARACTER_SET utf8");
 
 if (($_POST["op"]=="getallcanvas") || ($_GET["op"]=="getallcanvas"))
 {
-	$xsqlCommand = "SELECT * FROM canvas WHERE active=1 ORDER BY ID DESC";
+	$xsqlCommand = "SELECT * FROM canvas WHERE active=1 ORDER BY ID ASC";
 	$mysqlresult = mysql_query($xsqlCommand);
 	$mysql_rows = mysql_num_rows($mysqlresult);
 

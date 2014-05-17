@@ -48,6 +48,8 @@ var ArticlePanel = $("#ArticlePanel");
 
 var consoldebug = false;
 
+var CurrentDrawingFrame = 1;
+
 if ((isiPad_) || (isAndroid)) { isiPad = true; }
 
 var DrawCanvas, ctx, flag = false,
@@ -92,11 +94,52 @@ function init() {
 			if (resultData.length>0)
 			{
 				if (consoldebug) { console.log(resultData.length); }
-
+				$("#drawingsdiv").html("");
 				for (i=0; i<resultData.length; i++)
 				{
-					$("#drawingsdiv").append('<div id="Drawing_'+ resultData[i].DrawingID +'" class="wpframe" style="width:40px; height:60px; display:inline-block; margin-right:10px;"><img src="'+ resultData[i].FilePath +'" style="width:100%; height:100;"></div>');
+					$("#drawingsdiv").append('<div data-id="'+ resultData[i].DrawingID +'" id="Drawing_'+ resultData[i].DrawingID +'" class="wpframeDrawing" style="width:100px; height:125px; display:inline-block; margin-right:5px;"><img src="'+ resultData[i].FilePath +'" style="100px; height:125px;"></div>');
+					
+					if (resultData[i].DrawingID==CurrentDrawingFrame) {
+						$("#Drawing_"+resultData[i].DrawingID).addClass("SelectedFrame");
+					}
 				}
+				
+				$(".wpframeDrawing").click(function (){
+					CurrentDrawingFrame = $(this).data("id");
+					$(".wpframeDrawing").removeClass("SelectedFrame");
+					$(this).addClass("SelectedFrame");
+					//alert( $(this).data("id") );
+
+					dataToSend = [];
+					dataToSendTemp = [];
+
+					DrawingCache = [];
+					
+					$('#bigimage').attr("src", "getdraw.php?op=sendpngfile&DrawingID="+CurrentDrawingFrame+"&rnd="+Math.floor((Math.random() * 100000) + 1));
+
+					//reposition the png behind the drawing viewport
+					$("#copyimage").attr("src", $('#bigimage').attr('src'));
+					$("#copyimage").css({"left": (0 - RealLeftPos )+"px",  "top": (0 - RealTopPos )+"px" });
+				
+					ctx.clearRect(0, 0, w, h);
+					RedrawCanvas();
+					
+					var PostValues = { "op":"getlastsnapid", "DrawingID" : CurrentDrawingFrame };
+					$.ajax({
+						type: 'POST',
+						url: "getdraw.php",
+						data: PostValues,
+						dataType: "html",
+						success: function(resultData) { 
+							LastID = resultData;
+							if (consoldebug) { console.log(resultData); }
+						},
+						error: function(xhr, status, error) {
+						  if (consoldebug) { console.log("ERROR:"+xhr.responseText+" "+status+" "+error); }
+						}
+					});
+					
+				});
 			}
 		},
 		error: function(xhr, status, error) {
@@ -105,7 +148,7 @@ function init() {
     });
 	
 
-    var PostValues = { "op":"getlastsnapid", "DrawingID" : "1" };
+    var PostValues = { "op":"getlastsnapid", "DrawingID" : CurrentDrawingFrame };
     $.ajax({
 		type: 'POST',
 		url: "getdraw.php",
@@ -130,7 +173,7 @@ function init() {
 				//DrawingCache = []; //clear local drawing cache
 				
 				RedrawBigPNGCounter=0;
-				$('#bigimage').attr("src", "getdraw.php?op=sendpngfile&DrawingID=1&rnd="+Math.floor((Math.random() * 100000) + 1));
+				$('#bigimage').attr("src", "getdraw.php?op=sendpngfile&DrawingID="+CurrentDrawingFrame+"&rnd="+Math.floor((Math.random() * 100000) + 1));
 				
 				//reposition the png behind the drawing viewport
 				$("#copyimage").attr("src", $('#bigimage').attr('src'));
@@ -193,6 +236,7 @@ function draw(x1,y1,x2,y2) {
     ctx.closePath();
 }
 
+//---------------------------------------------------------------------------------------------------------------------------------------------------
 function RedrawCanvas()
 {
 	if (consoldebug) { console.log("redraw"); }
@@ -213,7 +257,7 @@ function RedrawCanvas()
 //---------------------------------------------------------------------------------------------------------------------------------------------------
 function LoadAndUpdateDrawing()
 {
-    var PostValues = { "op":"load", "SenderID" : "1", "DrawingID" : "1" , "LastID" : LastID, 
+    var PostValues = { "op":"load", "SenderID" : "1", "DrawingID" : CurrentDrawingFrame , "LastID" : LastID, 
                                             "LeftPos" : LeftPos, "TopPos" : TopPos, "DrawWidth" : DrawWidth, "DrawHeight" : DrawHeight, 
                                             "RealWidth" : RealWidth , "RealHeight" : RealHeight ,
                                             "PreviewWidth" : PreviewWidth , "PreviewHeight" : PreviewHeight ,
@@ -249,7 +293,6 @@ function LoadAndUpdateDrawing()
 		  //in case of error copy the temp stored data back into dataToSend
 		  dataToSendTemp.push.apply(dataToSendTemp,dataToSend);
 		  dataToSend = dataToSendTemp;
-
 		}
     });
 }
@@ -271,11 +314,11 @@ $(document).ready(function() {
 	$('#smallscreen').animatedBorder({size: 1, color: '#A92546'}); 	
 
 	$("#searchicon").css({"left":($("#bigscreen").position().left+$("#bigscreen").width()-20 )+"px" });
-
-	$("#historyicon").css({"left":($("#canvascontainer").position().left+$("#canvascontainer").width()-20 )+"px" });
 	
 	$("#thumbs").css({"top":($("#canvascontainer").position().top + $("#canvascontainer").height()+20)+"px", "width":($("#canvascontainer").width()+$("#bigscreen").width()+20-10 )+"px" });
-	
+
+	$("#historyicon").css({"left":($("#thumbs").position().left+$("#thumbs").width()-20 )+"px" , "top":($("#thumbs").position().top-20 )+"px" });
+
 	init();
 
 //	$("#savebtn").click(function() { save(); });
