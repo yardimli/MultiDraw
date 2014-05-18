@@ -1,6 +1,6 @@
 <?php
 
-set_time_limit(96000);
+set_time_limit(196000);
 
 $link = mysql_pconnect("localhost","DrawUser","DrawPassword"); //B123456a
 mysql_select_db("cloudofvoice");
@@ -27,9 +27,9 @@ $start = microtime(true);
 
 echo "StartTime: ".$start;
 
-$intervaltime = 60;
+$intervaltime = 30;
 
-for ($loopi = 0; $loopi < (60*6*48); $loopi++) 
+for ($loopi = 0; $loopi < (60*6*100); $loopi++) 
 {
 	$TimeStamp = date("YmdHis",time());
 	echo "generating image(s) for iteration: ".$loopi." TimeStamp:" .$TimeStamp."\n";
@@ -42,47 +42,63 @@ for ($loopi = 0; $loopi < (60*6*48); $loopi++)
 	{
 		echo "generating image for canvas with ID:". mysql_result($mysqlresult2, $i2, "ID") ."\n";
 		
+	
 		$DrawingID  = mysql_result($mysqlresult2, $i2, "ID");
 		$RealWidth  = mysql_result($mysqlresult2, $i2, "CanvasWidth");
 		$RealHeight = mysql_result($mysqlresult2, $i2, "CanvasHeight");
 
-		$image = imagecreatetruecolor($RealWidth,$RealHeight);
-		$black = imagecolorallocate($image,0,0,0);
-		$white = imagecolorallocate($image,255,255,255);
-		imagefill($image,0,0,$white);
+		$xsqlCommand3 = "SELECT * FROM snapshots WHERE DrawingID=".$DrawingID." ORDER BY ID DESC LIMIT 1";
+		$mysqlresult3 = mysql_query($xsqlCommand3);
+		$mysql_rows3 = mysql_num_rows($mysqlresult3);
 
-		imagesetthickness($image, 2);
-
+		$LastSnapShotID=0;
+		if ($mysql_rows3==1) { $LastSnapShotID  = mysql_result($mysqlresult3, 0, "LastID");}
+		
+		
 		$xsqlCommand = "SELECT * FROM Drawings WHERE DrawingID=".$DrawingID." ORDER BY ID ASC";
 		$mysqlresult = mysql_query($xsqlCommand);
-		$mysql_rows = mysql_num_rows($mysqlresult);
+		$mysql_rows = mysql_num_rows($mysqlresult);	
+		
+		$LastID = 1;
+		if ($mysql_rows>0) { $LastID = mysql_result($mysqlresult, $mysql_rows-1, "ID"); }
+		
+		
+		echo "SnapShot Last Drawing Pos: ". $LastSnapShotID . " Drwing Last Pos: ".$LastID."\n";
+		
+		if ($LastID>$LastSnapShotID) {
+			echo "Generating new image\n";
+			$image = imagecreatetruecolor($RealWidth,$RealHeight);
+			$black = imagecolorallocate($image,0,0,0);
+			$white = imagecolorallocate($image,255,255,255);
+			imagefill($image,0,0,$white);
 
-		$coordinates = array();
+			imagesetthickness($image, 2);
+			$coordinates = array();
 
-		for ($i=0; $i<$mysql_rows; $i++)
-		{
-			$ID=mysql_result($mysqlresult, $i, "ID");
-			$X1=mysql_result($mysqlresult, $i, "X1");
-			$Y1=mysql_result($mysqlresult, $i, "Y1");
-			$X2=mysql_result($mysqlresult, $i, "X2");
-			$Y2=mysql_result($mysqlresult, $i, "Y2");
+			for ($i=0; $i<$mysql_rows; $i++)
+			{
+				$ID=mysql_result($mysqlresult, $i, "ID");
+				$X1=mysql_result($mysqlresult, $i, "X1");
+				$Y1=mysql_result($mysqlresult, $i, "Y1");
+				$X2=mysql_result($mysqlresult, $i, "X2");
+				$Y2=mysql_result($mysqlresult, $i, "Y2");
 
-			imageline($image, $X1,$Y1,$X2,$Y2, $black);
+				imageline($image, $X1,$Y1,$X2,$Y2, $black);
+			}
+
+			$SnapFileName = "preview/".$DrawingID."-".$TimeStamp."-preview.png";
+			imagepng($image,"temp.png");
+			convertPNGto8bitPNG("temp.png",$SnapFileName);
+	//		imagepng($image,$SnapFileName);
+
+			$LastID = 0;
+			if ($mysql_rows>0) {
+				$LastID = mysql_result($mysqlresult, $i-1, "ID");
+			}
+			$xsqlCommand3 = "INSERT INTO snapshots (LastID,Width,Height,DrawingID,SnapFile,xDate) VALUES (". $LastID . "," . $RealWidth .",". $RealHeight .",". $DrawingID .",'". $SnapFileName ."',now())";
+	//		echo $xsqlCommand3;
+			$mysqlresult3 = mysql_query($xsqlCommand3);
 		}
-		
-		$SnapFileName = "preview/".$DrawingID."-".$TimeStamp."-preview.png";
-		imagepng($image,"temp.png");
-		convertPNGto8bitPNG("temp.png",$SnapFileName);
-//		imagepng($image,$SnapFileName);
-		
-		$LastID = 0;
-		if ($mysql_rows>0) {
-			$LastID = mysql_result($mysqlresult, $i-1, "ID");
-		}
-		$xsqlCommand3 = "INSERT INTO snapshots (LastID,Width,Height,DrawingID,SnapFile,xDate) VALUES (". $LastID . "," . $RealWidth .",". $RealHeight .",". $DrawingID .",'". $SnapFileName ."',now())";
-//		echo $xsqlCommand3;
-		$mysqlresult3 = mysql_query($xsqlCommand3);
-		
 	}
 
 	echo "waiting from ".$start." till ".($start + ($loopi*$intervaltime) + $intervaltime);
