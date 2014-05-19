@@ -1,6 +1,6 @@
 <?php
 
-set_time_limit(196000);
+set_time_limit(200000);
 
 $link = mysql_pconnect("localhost","DrawUser","DrawPassword"); //B123456a
 mysql_select_db("cloudofvoice");
@@ -9,15 +9,21 @@ $mysqlresult = mysql_query("SET CHARACTER_SET utf8");
 
 
 function convertPNGto8bitPNG($sourcePath, $destPath) {
+	
 	$srcimage = imagecreatefrompng($sourcePath);
 	list($width, $height) = getimagesize($sourcePath);
+	
 	$img = imagecreatetruecolor($width, $height);
+	
 	$bga = imagecolorallocatealpha($img, 0, 0, 0, 127);
+	
 	imagecolortransparent($img, $bga);
 	imagefill($img, 0, 0, $bga);
 	imagecopy($img, $srcimage, 0, 0, 0, 0, $width, $height);
+	
 	imagetruecolortopalette($img, false, 255);
 	imagesavealpha($img, true);
+	
 	imagepng($img, $destPath);
 	imagedestroy($img);
 }
@@ -41,7 +47,6 @@ for ($loopi = 0; $loopi < (60*6*100); $loopi++)
 	for ($i2=0; $i2<$mysql_rows2; $i2++)
 	{
 		echo "generating image for canvas with ID:". mysql_result($mysqlresult2, $i2, "ID") ."\n";
-		
 	
 		$DrawingID  = mysql_result($mysqlresult2, $i2, "ID");
 		$RealWidth  = mysql_result($mysqlresult2, $i2, "CanvasWidth");
@@ -63,7 +68,7 @@ for ($loopi = 0; $loopi < (60*6*100); $loopi++)
 		if ($mysql_rows>0) { $LastID = mysql_result($mysqlresult, $mysql_rows-1, "ID"); }
 		
 		
-		echo "SnapShot Last Drawing Pos: ". $LastSnapShotID . " Drwing Last Pos: ".$LastID."\n";
+		echo "SnapShot Last Drawing Pos : ". $LastSnapShotID . " Drwing Last Pos: ".$LastID."\n";
 		
 		if ($LastID>$LastSnapShotID) {
 			echo "Generating new image\n";
